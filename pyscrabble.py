@@ -3,9 +3,11 @@ import csv
 
 import enchant
 
+from board import Board, Location
 
+PATH_BOARD_LAYOUT = 'scrabble_board.csv'
 PATH_LETTER_SCORES = 'scrabble_score.csv';
-PATH_BOARD = 'scrabble_board.csv'
+
 
 
 def play():
@@ -45,8 +47,18 @@ def get_score(letter_scores, word):
         word_score += letter_scores[letter]
     return word_score
 
+def ex2():
+    dictionary = enchant.Dict("en_UK")
+    word = get_word(dictionary)
 
+    scorer = get_letter_scores(PATH_LETTER_SCORES)
 
+    board = Board(PATH_BOARD_LAYOUT, scorer)
+    score = board.score_word(
+        word,
+        Location(3, 3, Location.VERTICAL)
+    )
+    print(score)
 
 
 # # check for invalid starting position
@@ -58,4 +70,4 @@ def get_score(letter_scores, word):
 ###############################################################################
 
 if __name__ == '__main__':
-    play()
+    ex2()
