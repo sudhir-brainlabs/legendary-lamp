@@ -1,9 +1,7 @@
 import csv
 
 
-
-
-class Location:
+class Location():
 
     HORIZONTAL = 'HORIZONTAL'
     VERTICAL = 'VERTICAL'
@@ -12,6 +10,9 @@ class Location:
         self.x = x
         self.y = y
         self.orientation = orientation
+
+    def __str__(self):
+        return "{} at ({},{})".format(self.orientation, self.x, self.y)
 
     def positionsFor(self, word):
         x_step = 1 if self.orientation == self.HORIZONTAL else 0
@@ -26,7 +27,7 @@ class Location:
             y += y_step
 
 
-class Board:
+class Board():
 
     DOUBLE_WORD = 'DW'
     TRIPLE_WORD = 'TW'
@@ -42,6 +43,18 @@ class Board:
             for row in csv.reader(f):
                 self.layout.append(row)
 
+    def __getitem__(self, position):
+        x, y = position
+        return self.layout[y][x]
+
+    @property
+    def width(self):
+        return len(self.layout[0])
+
+    @property
+    def height(self):
+        return len(self.layout)
+
     def score_word(self, word, location):
         score = 0
         multiplier = 1
@@ -49,7 +62,7 @@ class Board:
         for char, position in location.positionsFor(word):
             tile_type = self[position]
             char_score = self.scorer[char]
-            
+
             if tile_type == self.DOUBLE_WORD:
                 score += char_score
                 multiplier *= 2
@@ -65,10 +78,23 @@ class Board:
 
         return score * multiplier
 
-            
-    def __getitem__(self, position):
-        x, y = position
-        return self.layout[y][x]
-    
+    def find_optimal_locations(self, word):
+        best_score = 0
+        best_locations = []
+        for location in self.possible_locations(word):
+            score = self.score_word(word, location)
+            if score > best_score:
+                best_score = score
+                best_locations = [location]
+            elif score == best_score:
+                best_locations.append(location)
+        return best_locations
 
-    
+    def possible_locations(self, word):       
+        for x in range(0, self.width - len(word) + 1):
+            for y in range(0, self.height):
+                yield Location(x, y, Location.HORIZONTAL)
+
+        for y in range(0, self.height - len(word) + 1):
+            for x in range(0, self.width):
+                yield Location(x, y, Location.VERTICAL)
